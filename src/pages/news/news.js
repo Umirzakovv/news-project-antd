@@ -1,15 +1,19 @@
 import { Layout, List, Pagination, Spin } from "antd";
 import { Content } from "antd/lib/layout/layout";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Container from "../../components/container/container";
 import Header from "../../components/header/header";
 import NewsItem from "../../components/news-item/news-item";
+import { setNews } from "../../store/actions/news";
 
 const News = () => {
-
-  const [data, setData] = useState();
   const [activePage, setActivePage] = useState(1);
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
+
+  const { news, count } = useSelector((state) => state.news);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     setLoading(true)
@@ -22,11 +26,11 @@ const News = () => {
       return res.json()
     })
     .then((data) => {
-      setData(data)
+      dispatch(setNews(data.articles, data.totalResults))
       setLoading(false)
     })
     
-  }, [activePage])
+  }, [activePage, dispatch])
 
   const handlePaginationClick = (changedPage) => {
     setActivePage(changedPage)
@@ -38,7 +42,7 @@ const News = () => {
       <Content>
         <Container>
           <List>
-            {!loading && data && data?.articles.map((article) => (
+            {!loading && news.map((article) => (
             <NewsItem key={article.id} article={article} />
             ))}
             {loading && <Spin />}
@@ -49,7 +53,7 @@ const News = () => {
               onChange={handlePaginationClick} 
               pageSize={2} 
               current={activePage} 
-              total={data?.totalResults} />
+              total={count} />
             )}
         </Container>
       </Content>
